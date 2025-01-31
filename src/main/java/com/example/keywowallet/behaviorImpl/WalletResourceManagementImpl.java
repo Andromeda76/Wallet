@@ -43,6 +43,7 @@ public class WalletResourceManagementImpl implements WalletResourceManagement {
                         walletRepository.save(walletRs);
                     }
                 });
+
         /**
         we may need to write remote between interfaces
          */
