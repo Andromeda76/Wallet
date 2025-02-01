@@ -21,8 +21,8 @@ public class Wallet extends AbstractEntity {
     // and profit that have been bought
     private BigDecimal walletAmount;
 
-    @JoinColumn(name = "StockProperties", updatable = false, insertable = false)
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "StockProperties")
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER,  optional = true)
     private Stock stocks;
 
     @Column(name = "Reserved_Amount")
