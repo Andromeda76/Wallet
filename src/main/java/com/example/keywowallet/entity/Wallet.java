@@ -22,7 +22,7 @@ public class Wallet extends AbstractEntity {
     private BigDecimal walletAmount;
 
     @JoinColumn(name = "StockProperties")
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER,  optional = true)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Stock stocks;
 
     @Column(name = "Reserved_Amount")

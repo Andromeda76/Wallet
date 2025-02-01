@@ -1,14 +1,10 @@
 package com.example.keywowallet.behaviorImpl;
 
 
-import java.lang.reflect.Array;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantLock;
 
 import com.example.keywowallet.IRepository.StockRepository;
 import com.example.keywowallet.behaviors.StockResourceManagement;
@@ -22,15 +18,15 @@ public class StockResourceManagementImpl implements StockResourceManagement {
 
     private final StockRepository stockRepository;
     private final BlockingQueue<Stock> stockBlockingQueue;
-    private final WalletResourceManagement walletResourceManagement;
+    private final WalletResourceManagementWrapper walletResourceManagementWrapper;
 
 
     public StockResourceManagementImpl(StockRepository stockRepository,
-                                       WalletResourceManagement walletResourceManagement) {
+                                       WalletResourceManagementWrapper walletResourceManagementWrapper) {
 
         this.stockRepository = stockRepository;
         this.stockBlockingQueue = new LinkedBlockingQueue<>(6);
-        this.walletResourceManagement = walletResourceManagement;
+        this.walletResourceManagementWrapper = walletResourceManagementWrapper;
     }
 
 
@@ -58,7 +54,7 @@ public class StockResourceManagementImpl implements StockResourceManagement {
                 }
                     return CompletableFuture.completedFuture(Boolean.TRUE);
             }).thenComposeAsync(futureResponse -> {
-                 insertStockAndUpdateWalletBasedOnStock(walletResourceManagement, stockBlockingQueue, isAddedToQueue);
+                 insertStockAndUpdateWalletBasedOnStock(stockBlockingQueue, isAddedToQueue, walletResourceManagementWrapper);
             return CompletableFuture.completedFuture(futureResponse);
             }).exceptionallyAsync(ex -> {
                     throw new RuntimeException(ex);
@@ -69,18 +65,18 @@ public class StockResourceManagementImpl implements StockResourceManagement {
 
 
     private Boolean addStockToBlockingQueue(BlockingQueue<Stock> stocks ,Stock stock, AtomicBoolean isAdded) {
+        isAdded.set(Boolean.FALSE);
         if (stocks.remainingCapacity() > 0) {
             stocks.add(stock);
             isAdded.set(Boolean.TRUE);
-        } else {
-            isAdded.set(Boolean.FALSE);
         }
         return isAdded.get();
     }
 
 
-    private CompletableFuture<Boolean> offerStockToQueueWithTurningCheckedToUncheckedException(BlockingQueue<Stock> stocks,
-                                                                         Stock stock, AtomicBoolean isAdded) {
+    private CompletableFuture<Boolean> offerStockToQueueWithTurningCheckedToUncheckedException(
+            BlockingQueue<Stock> stocks, Stock stock, AtomicBoolean isAdded) {
+
         CompletableFuture.supplyAsync(() -> {
             try {
                 System.out.println("offerStockWithTurningCheckedToUncheckedException : " + stock.getQuantity());
@@ -94,14 +90,13 @@ public class StockResourceManagementImpl implements StockResourceManagement {
     }
 
 
-    private void insertStockAndUpdateWalletBasedOnStock(WalletResourceManagement walletResourceManagement,
-                                                        BlockingQueue<Stock> stocks, AtomicBoolean isAddedToQueue) {
+    private void insertStockAndUpdateWalletBasedOnStock(BlockingQueue<Stock> stocks, AtomicBoolean isAddedToQueue,
+                                                        WalletResourceManagementWrapper walletResourceManagementWrapper) {
 
         if (isAddedToQueue.get() && !stocks.isEmpty()) {
                 stocks.forEach(inserted -> {
                     inserted = stockRepository.saveAndFlush(inserted);
-                    walletResourceManagement.updateWalletStatusForNewStock(inserted);
-                    walletResourceManagement.walletResourceManagement();
+                    walletResourceManagementWrapper.callWalletStockManagementService(inserted);
                     if (Objects.equals(inserted.getQuantity(), BigInteger.ZERO)){
                         boolean b = stockBlockingQueue.remove(inserted);
                         System.out.println("Does any stock removed : " + b);

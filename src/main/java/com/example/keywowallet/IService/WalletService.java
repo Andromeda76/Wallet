@@ -24,7 +24,7 @@ public class WalletService {
     }
 
     public List<Wallet> getWalletsWithWalletAmountFilter(BigDecimal balance) {
-        return walletRepository.findAllByWalletAmountGreaterThan(balance);
+        return walletRepository.findAllByWalletAmountGreaterThanEqual(balance);
     }
 
 }
