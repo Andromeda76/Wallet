@@ -20,6 +20,7 @@ public class WalletAPI {
         this.walletService = walletService;
     }
 
+
     @PostMapping("/insertWallet")
     public ResponseEntity<Wallet> insertWallet(@RequestBody Wallet wallet) {
         return ResponseEntity.ok(walletService.insertWallet(wallet));
@@ -29,4 +30,5 @@ public class WalletAPI {
     public ResponseEntity<List<Wallet>> getWalletAmountGreaterThan(@PathVariable("walletAmount") BigDecimal walletAmount) {
         return ResponseEntity.ok(walletService.getWalletsWithWalletAmountFilter(walletAmount));
     }
+
 }
