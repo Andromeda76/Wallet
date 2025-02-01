@@ -17,8 +17,9 @@ import java.util.List;
 public class WalletResourceManagementImpl implements WalletResourceManagement {
 
 
-    private final ThreadLocal<Stock> threadLocal;
     private final WalletService walletService;
+    private final ThreadLocal<Stock> threadLocal;
+    private List<Wallet> wallets;
 
 
     public WalletResourceManagementImpl(WalletService walletService) {
@@ -35,11 +36,11 @@ public class WalletResourceManagementImpl implements WalletResourceManagement {
     @Override
     public Wallet walletResourceManagement() {
         Stock stock = threadLocal.get();
-        List<Wallet> wallets = walletService.getWalletsWithWalletAmountFilter(BigDecimal.valueOf(200_000));
+
         /*
         wallets amount should be upper than200_000
          */
-        wallets.forEach(walletRs -> {
+        getWallets().forEach(walletRs -> {
                     if (getRequestedPortionOfStockQuantity(walletRs, stock)) {
                         System.out.println("HelloWorld From Wallet : " + stock.getQuantity());
                         walletRs.setStocks(stock);
@@ -68,6 +69,13 @@ public class WalletResourceManagementImpl implements WalletResourceManagement {
         return addingStockPermission;
     }
 
+    public List<Wallet> getWallets() {
+        return wallets;
+    }
+
+    public void setWallets() {
+        this.wallets = walletService.getWalletsWithWalletAmountFilter(BigDecimal.valueOf(200_000));;
+    }
 }
 
 
