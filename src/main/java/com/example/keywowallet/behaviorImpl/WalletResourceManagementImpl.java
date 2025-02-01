@@ -40,7 +40,10 @@ public class WalletResourceManagementImpl implements WalletResourceManagement {
         /*
         wallets amount should be upper than200_000
          */
-        getWallets().forEach(walletRs -> {
+
+        
+        if (Objects.nonNull(getWallets()) && getWallets().size() != 0){
+            getWallets().forEach(walletRs -> {
                     if (getRequestedPortionOfStockQuantity(walletRs, stock)) {
                         System.out.println("HelloWorld From Wallet : " + stock.getQuantity());
                         walletRs.setStocks(stock);
@@ -48,6 +51,7 @@ public class WalletResourceManagementImpl implements WalletResourceManagement {
                     }
                 });
         threadLocal.remove();
+        }
         /**
         we may need to write remote between interfaces
          */
