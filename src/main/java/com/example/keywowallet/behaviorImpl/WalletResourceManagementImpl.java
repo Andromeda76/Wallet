@@ -50,8 +50,8 @@ public class WalletResourceManagementImpl implements WalletResourceManagement {
                         walletService.insertWallet(walletRs);
                     }
                 });
+            }
         threadLocal.remove();
-        }
         /**
         we may need to write remote between interfaces
          */
