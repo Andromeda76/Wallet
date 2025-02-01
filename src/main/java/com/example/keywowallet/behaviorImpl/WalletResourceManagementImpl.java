@@ -1,8 +1,7 @@
 package com.example.keywowallet.behaviorImpl;
 
 
-import com.example.keywowallet.IRepository.WalletRepository;
-import com.example.keywowallet.behaviors.StockResourceManagement;
+import com.example.keywowallet.IService.WalletService;
 import com.example.keywowallet.behaviors.WalletResourceManagement;
 import com.example.keywowallet.entity.Stock;
 import com.example.keywowallet.entity.Wallet;
@@ -17,22 +16,26 @@ import java.util.List;
 @Service
 public class WalletResourceManagementImpl implements WalletResourceManagement {
 
-    private Stock stock;
-    private final WalletRepository walletRepository;
 
-    public WalletResourceManagementImpl(WalletRepository walletRepository) {
-        this.walletRepository = walletRepository;
+    private final ThreadLocal<Stock> threadLocal;
+    private final WalletService walletService;
+
+
+    public WalletResourceManagementImpl(WalletService walletService) {
+        this.walletService = walletService;
+        threadLocal = new ThreadLocal<>();
     }
 
     @Override
     public void updateWalletStatusForNewStock(Stock stock) {
-        this.stock = stock;
+        threadLocal.set(stock);
     }
 
 
     @Override
     public Wallet walletResourceManagement() {
-        List<Wallet> wallets = walletRepository.findAll();
+        Stock stock = threadLocal.get();
+        List<Wallet> wallets = walletService.getWalletsWithWalletAmountFilter(BigDecimal.valueOf(200_000));
         /*
         wallets amount should be upper than200_000
          */
@@ -40,10 +43,10 @@ public class WalletResourceManagementImpl implements WalletResourceManagement {
                     if (getRequestedPortionOfStockQuantity(walletRs, stock)) {
                         System.out.println("HelloWorld From Wallet : " + stock.getQuantity());
                         walletRs.setStocks(stock);
-                        walletRepository.save(walletRs);
+                        walletService.insertWallet(walletRs);
                     }
                 });
-
+        threadLocal.remove();
         /**
         we may need to write remote between interfaces
          */

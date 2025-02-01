@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class StockResourceManagementImpl implements StockResourceManagement {
 
-    private final ReentrantLock lock;
     private final StockRepository stockRepository;
     private final BlockingQueue<Stock> stockBlockingQueue;
     private final WalletResourceManagement walletResourceManagement;
@@ -28,7 +27,7 @@ public class StockResourceManagementImpl implements StockResourceManagement {
 
     public StockResourceManagementImpl(StockRepository stockRepository,
                                        WalletResourceManagement walletResourceManagement) {
-        lock = new ReentrantLock();
+
         this.stockRepository = stockRepository;
         this.stockBlockingQueue = new LinkedBlockingQueue<>(6);
         this.walletResourceManagement = walletResourceManagement;
@@ -97,9 +96,8 @@ public class StockResourceManagementImpl implements StockResourceManagement {
 
     private void insertStockAndUpdateWalletBasedOnStock(WalletResourceManagement walletResourceManagement,
                                                         BlockingQueue<Stock> stocks, AtomicBoolean isAddedToQueue) {
-        lock.lock();
-        if (isAddedToQueue.get()) {
-            if (!stocks.isEmpty()){
+
+        if (isAddedToQueue.get() && !stocks.isEmpty()) {
                 stocks.forEach(inserted -> {
                     inserted = stockRepository.saveAndFlush(inserted);
                     walletResourceManagement.updateWalletStatusForNewStock(inserted);
@@ -109,9 +107,7 @@ public class StockResourceManagementImpl implements StockResourceManagement {
                         System.out.println("Does any stock removed : " + b);
                     }
                 });
-            }
         }
-        lock.unlock();
     }
 
 }
